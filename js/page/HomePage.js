@@ -8,6 +8,7 @@ import FavoritePage from './FavoritePage'
 import MyPage from './my/MyPage'
 import SearchPage from './SearchPage'
 import ChooseLangaugePage from './ChooseLangaugePage'
+import SignInPage from './my/SignInPage'
 
 const PopularStack = createStackNavigator({
   PopularPage:PopularPage,
@@ -24,12 +25,19 @@ const TrendingStack = createStackNavigator({
   mode: 'modal'
 })
 
+const MyStack = createStackNavigator({
+  MyPage:MyPage,
+  SignInPage: SignInPage
+},{
+  initialRouteName: 'MyPage'
+})
+
 export default createBottomTabNavigator(
   {
     PopularPage: PopularStack,
     TrendingPage: TrendingStack,
     FavoritePage: createStackNavigator({ FavoritePage }),
-    MyPage: createStackNavigator({ MyPage })
+    MyPage: MyStack
   },{
     initialRouteName: 'TrendingPage',
     tabBarOptions: {
