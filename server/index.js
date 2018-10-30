@@ -42,21 +42,35 @@ app.get('/gitauth', (req, res)=>{
         let arg = args[0].split('=');
         const access_token = arg[1];        
         console.log(access_token);
-        return access_token;        
+        const access_token_obj = { access_token: access_token, type: 'SignIn' }
+        const html = `<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title></title>
+            <script>
+            document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){postMessage('${JSON.stringify(access_token_obj)}','*')}, 1000)})    
+            </script>
+        </head>
+        <body>
+        </body>
+        </html>`
+        res.end(html) 
     })
-    .then((token) => {
-        const url = ' https://api.github.com/user?access_token=' + token;        
-        fetch(url)
-            .then(res => {
-                return res.json();
-            })
-            .then(content => {
-                res.send(content);
-            })
-            .catch(e=>{
-                console.log(e);
-            })
-    })
+    // .then((token) => {
+    //     const url = ' https://api.github.com/user?access_token=' + token;        
+    //     fetch(url)
+    //         .then(res => {
+    //             return res.json();
+    //         })
+    //         .then(content => {
+    //             res.send(content);
+    //         })
+    //         .catch(e=>{
+    //             console.log(e);
+    //         })
+    // })
     .catch(e => {
         console.log(e);
     })
