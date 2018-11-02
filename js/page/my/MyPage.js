@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View, Image, TouchableHighlight, AsyncStorage } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableHighlight,
+  AsyncStorage } from 'react-native';
 import Svg, { Path } from 'react-native-svg'
 
 export default class App extends React.Component {
@@ -34,12 +35,13 @@ export default class App extends React.Component {
     this.props.navigation.navigate('SignInPage')
   }
 
+
   render() {
     return (
       <View style={styles.container}>
         { this.state.login ?
           <View style={styles.top}>
-            <Image source={{url: this.state.accountInfo.avatar}} style={{width: 128, height: 128, borderRadius: 4}} />
+            <Image source={{uri: this.state.accountInfo.avatar}} style={{width: 128, height: 128, borderRadius: 4}} />
             <Text style={{fontSize: 20, marginVertical: 5}}>{this.state.accountInfo.login}</Text>
           </View> :
           <TouchableHighlight onPress={()=>this.SignInUseGitAccount()}>

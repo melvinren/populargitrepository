@@ -35,7 +35,8 @@ export default class PopularPage extends React.Component {
       loading: false,
       finished: false,
       q: 'javascript',
-      result_count: 0
+      result_count: 0,
+      access_token: ''
     }
 
   }
@@ -54,8 +55,10 @@ export default class PopularPage extends React.Component {
         }
       })
 
-    AsyncStorage.getItem('currSearchText', (error, result) => {
-      this.setState({q: result || 'javascript'}, () => {
+    AsyncStorage.multiGet(['currSearchText','GH_Account'],(err, stores) =>{
+      const q = stores[0][1] || 'javascript'
+      const accountInfo = JSON.parse(stores[1][1] || '{}')
+      this.setState({q: q, access_token: accountInfo.access_token}, () => {
         this.loadData()
       })
     })
@@ -84,8 +87,13 @@ export default class PopularPage extends React.Component {
   fetchData(){
     const url = `https://api.github.com/search/repositories?q=${this.state.q}&per_page=${this.per_page}&page=${this.page}`
     console.log(url)
+    let headers = {}
+    if(this.state.access_token){
+      headers ={ headers: { 'authorization': `token ${this.state.access_token}` } }
+    }
+    console.log(headers)
     return new Promise((resolve, reject) => {
-      fetch(url)
+      fetch(url, headers)
         .then((response)=>response.json())
         .then((responseData)=>{
           resolve(responseData)
@@ -160,20 +168,27 @@ export default class PopularPage extends React.Component {
   _renderItem({item}){
     return (
       <View style={styles.container}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
-          <Text style={styles.title}>{item.full_name}</Text>
-        </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
-          <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-            <Text style={styles.author}>Author:</Text>
-            <Image style={{width:22, height:22}} source={{uri: item.owner.avatar_url}} />
+        <View style={{flexDirection: 'row', justifyContent:'space-between'}}>
+          <View style={{flex: 1}}>
+            <View style={{ flexDirection: 'row'}}>
+              <Text style={styles.title}>{item.full_name}</Text>
+            </View>
+            <View style={{ flexDirection: 'row'}}>
+              <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+                <Text style={styles.author}>Author:</Text>
+                <Image style={{width:22, height:22}} source={{uri: item.owner.avatar_url}} />
+              </View>
+              <View style={{flexDirection: 'row', alignItems: 'center', marginLeft: 10}}>
+                <Text style={styles.author}>Star:</Text>
+                <Text style={styles.author}>{item.stargazers_count}</Text>
+              </View>
+            </View>
           </View>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Text style={styles.author}>Star:</Text>
-            <Text style={styles.author}>{item.stargazers_count}</Text>
+          <View style={{ padding: 5, backgroundColor: "#cccccc"}}>
+            <Image source={require('../../assets/ic_star_navbar.png')} style={{width: 30, height: 30}} />
           </View>
         </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
+        <View>
           <Text style={styles.description}>{item.description}</Text>
         </View>
       </View>

@@ -17,6 +17,7 @@ export default class App extends React.Component {
             avatar: data.avatar_url,
             access_token: eventdata.access_token
           }
+          console.log(data)
           AsyncStorage.setItem('GH_Account',
             JSON.stringify(accountInfo),
             (error)=>{
@@ -46,9 +47,11 @@ export default class App extends React.Component {
   render(){
     return (
       <WebView
-        source={{ url: `http:192.168.1.73:3333/github/login?v=${new Date().getTime()}`}}
+        source={{ uri: `http:192.168.1.73:3333/github/login?v=${new Date().getTime()}`}}
         useWebKit = {true}
+        startInLoadingState={true}
         onMessage={this.receiveMessage.bind(this)}
+        // onNavigationStateChange={this.navigationStateChange.bind(this)}
       />)
   }
 }
