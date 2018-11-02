@@ -1,9 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, View, FlatList, Image,
-  TouchableHighlight, AsyncStorage } from 'react-native';
+  TouchableOpacity, AsyncStorage } from 'react-native';
 // import { createMaterialTopTabNavigator } from 'react-navigation'
 
 import UILoading from '../common/UILoading'
+import { Ionicons } from '@expo/vector-icons'
+import { relativeTime } from '../common/DateFormat'
+import { commaSplit } from '../common/NumberFormat'
+
 
 export default class PopularPage extends React.Component {
 
@@ -12,13 +16,13 @@ export default class PopularPage extends React.Component {
       title: 'Popular',
       headerBackTitle: null,
       headerRight: (
-        <TouchableHighlight
+        <TouchableOpacity
           onPress={navigation.getParam('search')}
         >
           <View style={{padding: 5}}>
             <Image style={{width:24, height:24, tintColor: 'blue'}} source={require('../../assets/ic_search_white_48pt.png')} />
           </View>
-        </TouchableHighlight>
+        </TouchableOpacity>
       )
     }
   }
@@ -86,12 +90,10 @@ export default class PopularPage extends React.Component {
 
   fetchData(){
     const url = `https://api.github.com/search/repositories?q=${this.state.q}&per_page=${this.per_page}&page=${this.page}`
-    console.log(url)
     let headers = {}
     if(this.state.access_token){
       headers ={ headers: { 'authorization': `token ${this.state.access_token}` } }
     }
-    console.log(headers)
     return new Promise((resolve, reject) => {
       fetch(url, headers)
         .then((response)=>response.json())
@@ -128,7 +130,7 @@ export default class PopularPage extends React.Component {
   _renderListHeader(){
     return (
       <View style={styles.listHeader}>
-        <Text>{`Search: ${this.state.q}, ${this.state.result_count} repository results`}</Text>
+        <Text>{`Search: ${this.state.q}, ${commaSplit(this.state.result_count)} repository results`}</Text>
       </View>
     )
   }
@@ -152,7 +154,7 @@ export default class PopularPage extends React.Component {
         <FlatList
           data={this.state.dataSource}
           keyExtractor={(item,index)=>index.toString()}
-          renderItem = {this._renderItem}
+          renderItem = {this._renderItem.bind(this)}
           onRefresh={() => this.loadData()}
           refreshing={this.state.refreshing}
           onEndReachedThreshold={0.5}
@@ -165,33 +167,37 @@ export default class PopularPage extends React.Component {
     );
   }
 
+  openURL(item){
+    this.props.navigation.navigate('WebviewPage', {
+          url: item.html_url,
+          title: item.full_name
+        })
+  }
+
   _renderItem({item}){
     return (
-      <View style={styles.container}>
-        <View style={{flexDirection: 'row', justifyContent:'space-between'}}>
-          <View style={{flex: 1}}>
-            <View style={{ flexDirection: 'row'}}>
-              <Text style={styles.title}>{item.full_name}</Text>
-            </View>
-            <View style={{ flexDirection: 'row'}}>
+      <TouchableOpacity onPress={()=>this.openURL(item)}>
+        <View style={styles.container}>
+          <View style={{flexDirection: 'row', justifyContent:'space-between'}}>
+            <View style={{flex: 1}}>
+              <View style={{ flexDirection: 'row'}}>
+                <Text style={styles.title}>{item.full_name}</Text>
+              </View>
               <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={styles.author}>Author:</Text>
-                <Image style={{width:22, height:22}} source={{uri: item.owner.avatar_url}} />
-              </View>
-              <View style={{flexDirection: 'row', alignItems: 'center', marginLeft: 10}}>
-                <Text style={styles.author}>Star:</Text>
-                <Text style={styles.author}>{item.stargazers_count}</Text>
+                <Text style={[...styles.author, {color: '#ffac45'}]}>{item.language ? item.language + '   ' : ''}</Text>
+                <Text style={styles.author}>{relativeTime(item.pushed_at)}</Text>
               </View>
             </View>
+            <View style={{flexDirection: 'row', justifyContent:'center', alignItems: 'center', padding: 5}}>
+              <Ionicons name="ios-star" size={14} />
+              <Text style={[...styles.author, {marginLeft: 2}]}>{commaSplit(item.stargazers_count)}</Text>
+            </View>
           </View>
-          <View style={{ padding: 5, backgroundColor: "#cccccc"}}>
-            <Image source={require('../../assets/ic_star_navbar.png')} style={{width: 30, height: 30}} />
+          <View style={{marginVertical: 5, marginBottom: 0}}>
+            <Text style={styles.description}>{item.description}</Text>
           </View>
         </View>
-        <View>
-          <Text style={styles.description}>{item.description}</Text>
-        </View>
-      </View>
+      </TouchableOpacity>
     )
   }
 

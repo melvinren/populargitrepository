@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, AsyncStorage, FlatList,Image } from 'react-native';
 import UILoading from '../common/UILoading'
+import { commaSplit } from '../common/NumberFormat'
 
 export default class App extends React.Component {
 
@@ -13,6 +14,7 @@ export default class App extends React.Component {
     this.state = {
       accountInfo: null,
       loading: false,
+      refreshing: false,
       dataSource: []
     }
   }
@@ -33,25 +35,55 @@ export default class App extends React.Component {
   }
 
   fetchStarred(){
-    const { accountInfo } = this.state
     this.setState({ loading: true })
-    const url = `https://api.github.com/users/${accountInfo.login}/starred`
-    fetch(url,
-      {
-        method: 'get',
-        headers: {
-          'authorization': `token ${accountInfo.access_token}`,
-        }
-      })
-      .then(response=>response.json())
-      .then(data=>{
+    this.loadData()
+      .then((data)=>{
         this.setState({
           loading: false,
           dataSource: data
         })
       })
-      .catch((error)=>{
-        console.log(error)
+      .catch(()=>{
+        this.setState({
+          loading: false
+        })
+      })
+  }
+
+  refresh(){
+    this.setState({ refreshing: true })
+    this.loadData()
+      .then((data)=>{
+        this.setState({
+          refreshing: false,
+          dataSource: data
+        })
+      })
+      .catch(()=>{
+        this.setState({
+          refreshing: false
+        })
+      })
+  }
+
+  loadData(){
+    const { accountInfo } = this.state
+    const url = `https://api.github.com/users/${accountInfo.login}/starred`
+    return new Promise((resolve, reject)=> {
+      fetch(url,
+        {
+          method: 'get',
+          headers: {
+            'authorization': `token ${accountInfo.access_token}`,
+          }
+        })
+        .then(response=>response.json())
+        .then(data=>{
+          resolve(data)
+        })
+        .catch((error)=>{
+          reject(error)
+        })
       })
   }
 
@@ -62,13 +94,13 @@ export default class App extends React.Component {
           <Text style={styles.title}>{item.full_name}</Text>
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
-          <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-            <Text style={styles.author}>Author:</Text>
+          <View style={{ flexDirection: 'row', height: 28, justifyContent:'center', alignItems: 'center'}}>
+            <Text style={styles.author}>Author: </Text>
             <Image style={{width:22, height:22}} source={{uri: item.owner.avatar_url}} />
           </View>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <Text style={styles.author}>Star:</Text>
-            <Text style={styles.author}>{item.stargazers_count}</Text>
+            <Text style={styles.author}>{commaSplit(item.stargazers_count)}</Text>
           </View>
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
@@ -87,6 +119,8 @@ export default class App extends React.Component {
           data={this.state.dataSource}
           keyExtractor={(item,index)=>index.toString()}
           renderItem = {this._renderItem}
+          onRefresh={() => this.refresh()}
+          refreshing={this.state.refreshing}
         />
         }
       </View>

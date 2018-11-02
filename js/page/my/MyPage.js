@@ -20,7 +20,7 @@ export default class App extends React.Component {
     AsyncStorage.getItem('GH_Account', (error, result)=>{
       if(!error && result){
         const accountInfo = JSON.parse(result)
-        console.log(accountInfo)
+        // console.log(accountInfo)
         if(accountInfo){
           this.setState({
             login: true,

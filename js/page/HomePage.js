@@ -39,7 +39,7 @@ export default createBottomTabNavigator(
     FavoritePage: createStackNavigator({ FavoritePage }),
     MyPage: MyStack
   },{
-    initialRouteName: 'TrendingPage',
+    initialRouteName: 'PopularPage',
     tabBarOptions: {
       activeTintColor: 'tomato',
       inactiveTintColor: 'gray'
